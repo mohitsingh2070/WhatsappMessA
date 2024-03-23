@@ -1,0 +1,32 @@
+from flask import Flask, request, send_file
+from openpyxl import Workbook
+
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.json
+    if 'Body' in data:
+        message = data['Body'].strip()
+        if message.isdigit() and len(message) == 6:
+            entry = get_entry_from_database(message)  # Replace with your database query
+            if entry:
+                file_path = generate_excel(entry)
+                return send_file(file_path, as_attachment=True)
+    return 'Invalid input'
+
+def get_entry_from_database(number):
+    # Dummy function to fetch entry from a database
+    return {'Name': 'John Doe', 'Age': 30, 'Email': 'john@example.com'}
+
+def generate_excel(entry):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(['Name', 'Age', 'Email'])
+    ws.append([entry['Name'], entry['Age'], entry['Email']])
+    file_path = 'entry.xlsx'
+    wb.save(file_path)
+    return file_path
+
+if __name__ == '__main__':
+    app.run(debug=True)
